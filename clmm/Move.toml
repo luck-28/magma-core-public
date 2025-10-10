@@ -1,0 +1,42 @@
+[package]
+name = "MagmaClmm"
+edition = "2024.beta" # edition = "legacy" to use legacy (pre-2024) Move
+license = "MIT"       # e.g., "MIT", "GPL", "Apache 2.0"
+# authors = ["..."]      # e.g., ["Joe Smith (joesmith@noemail.com)", "John Snow (johnsnow@noemail.com)"]
+version = ""
+published-at = "0x183af2adf115f331105825ae63e1d7d3c848d67beb4d60bc36208a90a5e92f4b"
+
+[dependencies]
+Sui = { git = "https://github.com/MystenLabs/sui.git", subdir = "crates/sui-framework/packages/sui-framework", rev = "mainnet-v1.41.1" }
+# MoveSTL = { git = "https://github.com/MagmaFinanceIO/move-stl.git", subdir = "sui", rev = "main" }
+MoveSTL = { local = "../move-stl/sui", override = true }
+# IntegerMate = { git = "https://github.com/MagmaFinanceIO/integer-mate.git", subdir = "sui", rev = "main" }
+IntegerMate = { local = "../integer-mate/sui", override = true }
+MagmaCaps = { local = "../caps" }
+
+# For remote import, use the `{ git = "...", subdir = "...", rev = "..." }`.
+# Revision can be a branch, a tag, and a commit hash.
+# MyRemotePackage = { git = "https://some.remote/host.git", subdir = "remote/path", rev = "main" }
+
+# For local dependencies use `local = path`. Path is relative to the package root
+# Local = { local = "../path/to" }
+
+# To resolve a version conflict and force a specific version for dependency
+# override use `override = true`
+# Override = { local = "../conflicting/version", override = true }
+
+[addresses]
+magma_clmm = "0x4a35d3dfef55ed3631b7158544c6322a23bc434fe4fca1234cb680ce0505f82d"
+
+
+[dev-dependencies]
+# The dev-dependencies section allows overriding dependencies for `--test` and
+# `--dev` modes. You can introduce test-only dependencies here.
+# Local = { local = "../path/to/dev-build" }
+# Sui = { git = "https://github.com/MystenLabs/sui.git", subdir = "crates/sui-framework/packages/sui-framework", rev = "mainnet-v1.23.1", override = true }
+
+[dev-addresses]
+# The dev-addresses section allows overwriting named addresses for the `--test`
+# and `--dev` modes.
+# alice = "0xB0B"
+# integer_mate = "0xcd2d9560c771c96d2d7355d3f6e491427c93f3fc74607c5ca712151a79bb56cc"
