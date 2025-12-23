@@ -26,8 +26,7 @@ IntegerMate = { git = "https://github.com/luck-28/MAGMA-integer-mate.git", subdi
 # Override = { local = "../conflicting/version", override = true }
 
 [addresses]
-magma_clmm = "0x0"
-
+magma_clmm = "0x4a35d3dfef55ed3631b7158544c6322a23bc434fe4fca1234cb680ce0505f82d"
 
 [dev-dependencies]
 # The dev-dependencies section allows overriding dependencies for `--test` and
