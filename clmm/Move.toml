@@ -3,7 +3,7 @@ name = "MagmaClmm"
 edition = "2024.beta" # edition = "legacy" to use legacy (pre-2024) Move
 license = "MIT"       # e.g., "MIT", "GPL", "Apache 2.0"
 # authors = ["..."]      # e.g., ["Joe Smith (joesmith@noemail.com)", "John Snow (johnsnow@noemail.com)"]
-version = ""
+version = "3"
 #published-at = "0x183af2adf115f331105825ae63e1d7d3c848d67beb4d60bc36208a90a5e92f4b"
 
 [dependencies]
