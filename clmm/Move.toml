@@ -7,7 +7,7 @@ version = ""
 published-at = "0x183af2adf115f331105825ae63e1d7d3c848d67beb4d60bc36208a90a5e92f4b"
 
 [dependencies]
-Sui = { git = "https://github.com/MystenLabs/sui.git", subdir = "crates/sui-framework/packages/sui-framework", rev = "mainnet-v1.41.1" }
+Sui = { git = "https://github.com/MystenLabs/sui.git", subdir = "crates/sui-framework/packages/sui-framework", rev = "c1f1ae650fb9f9248b39a569400b4420820868db" }
 # MoveSTL = { git = "https://github.com/MagmaFinanceIO/move-stl.git", subdir = "sui", rev = "main" }
 MoveSTL = { local = "../move-stl/sui", override = true }
 # IntegerMate = { git = "https://github.com/MagmaFinanceIO/integer-mate.git", subdir = "sui", rev = "main" }
