@@ -12,7 +12,7 @@ Sui = { git = "https://github.com/MystenLabs/sui.git", subdir = "crates/sui-fram
 MoveSTL = { local = "../move-stl/sui", override = true }
 # IntegerMate = { git = "https://github.com/MagmaFinanceIO/integer-mate.git", subdir = "sui", rev = "main" }
 IntegerMate = { local = "../integer-mate/sui", override = true }
-MagmaCaps = { local = "../caps" }
+#MagmaCaps = { local = "../caps" }
 
 # For remote import, use the `{ git = "...", subdir = "...", rev = "..." }`.
 # Revision can be a branch, a tag, and a commit hash.
