@@ -21,8 +21,6 @@ use magma_clmm::tick_math;
 use magma_clmm::clmm_math;
 use magma_clmm::partner;
 
-use magma_caps::gauge_cap::GaugeCap;
-
 const ErrAmountIncorrect: u64 = 0;
 const ErrLiquidityOverflow: u64 = 1;
 const ErrLiquidityUnderflow: u64 = 2;
@@ -1514,17 +1512,6 @@ public fun url<CoinTypeA, CoinTypeB>(pool: &Pool<CoinTypeA, CoinTypeB>): String 
     pool.url
 }
 
-public fun mark_position_staked<CoinTypeA, CoinTypeB>(pool: &mut Pool<CoinTypeA, CoinTypeB>, gauge_cap: &GaugeCap, position_id: ID) {
-    assert!(!pool.is_pause, ErrPoolPaused);
-    pool.check_gauge_cap(gauge_cap);
-    pool.position_manager.mark_position_staked(position_id, true);
-}
-
-public fun mark_position_unstaked<CoinTypeA, CoinTypeB>(pool: &mut Pool<CoinTypeA, CoinTypeB>, gauge_cap: &GaugeCap, position_id: ID) {
-    assert!(!pool.is_pause, ErrPoolPaused);
-    pool.check_gauge_cap(gauge_cap);
-    pool.position_manager.mark_position_staked(position_id, false);
-}
 
 // (fee_growth_global: u128, staked_fee_amount: u128)
 fun calculate_fees<CoinTypeA, CoinTypeB>(
@@ -1563,11 +1550,6 @@ fun apply_unstaked_fees(unstaked_fee_amount: u128, staked_fee_amount: u128, unst
     (unstaked_fee_amount - shift_fee, staked_fee_amount + shift_fee)
 }
 
-public fun update_magma_distribution_growth_global<CoinTypeA, CoinTypeB>(pool: &mut Pool<CoinTypeA, CoinTypeB>, gauge_cap: &GaugeCap, clock: &clock::Clock) {
-    assert!(!pool.is_pause, ErrPoolPaused);
-    pool.check_gauge_cap(gauge_cap);
-    let _reward = pool.update_magma_distribution_growth_global_internal(clock);
-}
 
 /// @dev timeDelta != 0 handles case when function is called twice in the same block.
 /// @dev stakedLiquidity > 0 handles case when depositing staked liquidity and there is no liquidity staked yet,
@@ -1612,62 +1594,7 @@ public fun get_magma_distribution_growth_inside<CoinTypeA, CoinTypeB>(pool: &Poo
     tick::get_magma_distribution_growth_in_range(pool.current_tick_index, global_growth, option::some(*pool.borrow_tick(tick_lower_index)), option::some(*pool.borrow_tick(tick_upper_index)))
 }
 
-fun update_magma_distribution_internal<A, B>(
-    pool: &mut Pool<A, B>,
-    liquidity_delta: I128,
-    tick_lower_index: I32,
-    tick_upper_index: I32,
-    clock: &clock::Clock
-) {
-    if (i32::gte(pool.current_tick_index, tick_lower_index) && i32::lt(pool.current_tick_index, tick_upper_index)) {
-        // lower <= current < upper
-        pool.update_magma_distribution_growth_global_internal(clock);
-        if (i128::is_neg(liquidity_delta)) {
-            assert!(pool.magma_distribution_staked_liquidity >= i128::abs_u128(liquidity_delta));
-        } else {
-            let (_, overflowed) = i128::overflowing_add(i128::from(pool.magma_distribution_staked_liquidity), liquidity_delta);
-            assert!(!overflowed, ErrStakedLiquidityOverflow);
-        };
-        pool.magma_distribution_staked_liquidity = i128::from(pool.magma_distribution_staked_liquidity).add(liquidity_delta).as_u128();
-    };
 
-    let maybe_tick_lower = pool.tick_manager.try_borrow_tick(tick_lower_index);
-    let maybe_tick_upper = pool.tick_manager.try_borrow_tick(tick_upper_index);
-    if (maybe_tick_lower.is_some()) {
-        pool.tick_manager.update_magma_stake(tick_lower_index, liquidity_delta, false);
-    };
-    if (maybe_tick_upper.is_some()) {
-        pool.tick_manager.update_magma_stake(tick_upper_index, liquidity_delta, true);
-    }
-}
-
-public fun stake_in_magma_distribution<CoinTypeA, CoinTypeB>(
-    pool: &mut Pool<CoinTypeA, CoinTypeB>,
-    gauge_cap: &GaugeCap,
-    liquidity_delta: u128,
-    tick_lower_index: I32,
-    tick_upper_index: I32,
-    clock: &clock::Clock
-) {
-    assert!(!pool.is_pause, ErrPoolPaused);
-    assert!(liquidity_delta != 0);
-    pool.check_gauge_cap(gauge_cap);
-    pool.update_magma_distribution_internal(i128::from(liquidity_delta), tick_lower_index, tick_upper_index, clock);
-}
-
-public fun unstake_from_magma_distribution<CoinTypeA, CoinTypeB>(
-    pool: &mut Pool<CoinTypeA, CoinTypeB>,
-    gauge_cap: &GaugeCap,
-    liquidity_delta: u128,
-    tick_lower_index: I32,
-    tick_upper_index: I32,
-    clock: &clock::Clock
-) {
-    assert!(!pool.is_pause, ErrPoolPaused);
-    assert!(liquidity_delta != 0);
-    pool.check_gauge_cap(gauge_cap);
-    pool.update_magma_distribution_internal(i128::neg(i128::from(liquidity_delta)), tick_lower_index, tick_upper_index, clock);
-}
 
 public fun get_magma_distribution_last_updated<A, B>(pool: &Pool<A, B>): u64 {
     pool.magma_distribution_last_updated
@@ -1694,48 +1621,8 @@ public fun get_magma_distribution_rollover<A, B>(pool: &Pool<A, B>): u64 {
     pool.magma_distribution_rollover
 }
 
-public fun init_magma_distribution_gauge<A, B>(pool: &mut Pool<A, B>, gauge_cap: &GaugeCap) {
-    assert!(gauge_cap.get_pool_id() == object::id(pool));
-    pool.magma_distribution_gauger_id.fill(gauge_cap.get_gauge_id());
-}
 
-fun check_gauge_cap<A, B>(self: &Pool<A, B>, cap: &GaugeCap) {
-    assert!(
-        cap.get_pool_id() == object::id(self) &&
-        self.magma_distribution_gauger_id.is_some_and!(|i| i == cap.get_gauge_id()));
-}
 
-public fun sync_magma_distribution_reward<A, B>(pool: &mut Pool<A, B>, gauge_cap: &GaugeCap, reward_rate: u128, reward_reserves: u64, period_finish: u64) {
-    assert!(!pool.is_pause, ErrPoolPaused);
-    pool.check_gauge_cap(gauge_cap);
-    pool.magma_distribution_rate = reward_rate;
-    pool.magma_distribution_reserve = reward_reserves;
-    pool.magma_distribution_period_finish = period_finish;
-    pool.magma_distribution_rollover = 0;
-}
-
-public fun collect_magma_distribution_gauger_fees<A, B>(pool: &mut Pool<A, B>, gauge_cap: &GaugeCap): (Balance<A>, Balance<B>) {
-    assert!(!pool.is_pause, ErrPoolPaused);
-    pool.check_gauge_cap(gauge_cap);
-    let mut balance_a = balance::zero();
-    let mut balance_b = balance::zero();
-    if (pool.magma_distribution_gauger_fee.coin_a > 0) {
-        balance_a.join(pool.coin_a.split(pool.magma_distribution_gauger_fee.coin_a));
-        pool.magma_distribution_gauger_fee.coin_a = 0;
-    };
-    if (pool.magma_distribution_gauger_fee.coin_b > 0) {
-        balance_b.join(pool.coin_b.split(pool.magma_distribution_gauger_fee.coin_b));
-        pool.magma_distribution_gauger_fee.coin_b = 0;
-    };
-
-    event::emit(CollectGaugeFeeEvent {
-        pool: object::id(pool),
-        amount_a: balance_a.value(),
-        amount_b: balance_b.value(),
-    });
-
-    (balance_a, balance_b)
-}
 
 #[test_only]
 /// Test-only accessor for rewarder_manager
