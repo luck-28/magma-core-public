@@ -8,7 +8,7 @@ published-at = "0x183af2adf115f331105825ae63e1d7d3c848d67beb4d60bc36208a90a5e92f
 
 [dependencies]
 Sui = { git = "https://github.com/MystenLabs/sui.git", subdir = "crates/sui-framework/packages/sui-framework", rev = "c1f1ae650fb9f9248b39a569400b4420820868db" }
-MoveSTL = { git = "https://github.com/luck-28/MAGMA-move-stlL.git", subdir = "sui", rev = "main" }
+MoveSTL = { git = "https://github.com/luck-28/MAGMA-move-stl.git", subdir = "sui", rev = "main" }
 # MoveSTL = { local = "../move-stl/sui", override = true }
 IntegerMate = { git = "https://github.com/luck-28/MAGMA-integer-mate.git", subdir = "sui", rev = "main" }
 # IntegerMate = { local = "../integer-mate/sui", override = true }
